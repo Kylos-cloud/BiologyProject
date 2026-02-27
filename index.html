@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Heart Rate Quiz</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,0.08);
+      --text: #eef2ff;
+      --muted: rgba(238,242,255,0.7);
+      --ok: #27d17f;
+      --warn: #ffcc00;
+      --bad: #ff5a5a;
+
+      /* controlled by JS */
+      --beat-duration: 0.9s;
+      --heart-glow: 0.25;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 70% 10%, rgba(255,59,107,0.20), transparent 60%),
+                  radial-gradient(900px 500px at 20% 80%, rgba(80,130,255,0.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding: 28px 14px;
+    }
+
+    .wrap{
+      width: min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.05fr 1.4fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    @media (max-width: 860px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    h1{
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0.2px;
+    }
+    p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    /* Heart area */
+    .heartBox{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      align-items:center;
+      text-align:center;
+      padding-top: 10px;
+    }
+
+    .bpm{
+      display:flex;
+      gap: 12px;
+      align-items:baseline;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .bpm .value{
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .bpm .unit{
+      color: var(--muted);
+      font-weight: 600;
+      margin-left: 2px;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--ok);
+      box-shadow: 0 0 12px rgba(39,209,127,0.6);
+    }
+
+    /* SVG heart animation */
+    .heartSvg{
+      width: min(320px, 82vw);
+      height: auto;
+      display:block;
+      filter: drop-shadow(0 0 22px rgba(255,59,107,var(--heart-glow)));
+    }
+    #heartImg {
+      display: inline-block;
+      transform-origin: center;
+      animation: beat var(--beat-duration) infinite ease-in-out;
+    }
+
+    /* Animate the whole anatomical heart as a group */
+    .heartShape{
+      transform-origin: 50% 55%;
+      animation: beat var(--beat-duration) infinite ease-in-out;
+    }
+
+    @keyframes beat{
+      0%   { transform: scale(1); }
+      12%  { transform: scale(1.08); }
+      25%  { transform: scale(0.98); }
+      38%  { transform: scale(1.12); }
+      55%  { transform: scale(1); }
+      100% { transform: scale(1); }
+    }
+
+    /* Questions */
+    .qList{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .q{
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .qTitle{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:flex-start;
+    }
+    .qTitle strong{
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .points{
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .choices{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .choice{
+      position: relative;
+    }
+    .choice input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .choice label{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 12px;
+      min-width: 74px;
+      border-radius: 999px;
+      cursor:pointer;
+      user-select:none;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.15);
+      color: var(--text);
+      font-weight: 650;
+      font-size: 13px;
+      transition: transform 120ms ease, background 120ms ease, border 120ms ease;
+    }
+    .choice label:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.30);
+    }
+    .choice input:checked + label{
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.38);
+    }
+
+    .ageRow{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .ageRow input[type="number"]{
+      width: 110px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.15);
+      color: var(--text);
+      font-weight: 700;
+      outline: none;
+    }
+    .ageHint{
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footerRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap:wrap;
+    }
+
+    .scoreBox{
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    button{
+      appearance:none;
+      border:none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.12);
+      color: var(--text);
+      font-weight: 700;
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,0.16);
+      transition: transform 120ms ease, background 120ms ease, border 120ms ease;
+    }
+    button:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.26);
+    }
+
+    .note{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(238,242,255,0.65);
+    }
+
+    
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Left: Heart -->
+    <section class="panel">
+      <h1></h1>
+      <p>Answer the questions. Each <b>Yes</b> increases the score, which increases beat speed and the estimated BPM.</p>
+
+      <div class="heartBox">
+        <div class="bpm">
+          <span class="value" id="bpmValue">78</span>
+          <span class="unit">BPM</span>
+        </div>
+
+        <div class="status" id="statusPill">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">Normal</span>
+        </div>
+
+        <!-- Your anatomical heart SVG (inline). We animate the <g class="heartShape"> -->
+          <img 
+            src="anatomical-heart-svgrepo-com.svg" 
+            id="heartImg"
+            class="heartSvg"
+            alt="Beating anatomical heart"
+          />
+
+        <p class="note">
+          Demo for a school project (not a medical tool). Caffeine, stress, sleep, sugar, and activity can affect heart rate.
+        </p>
+      </div>
+    </section>
+
+    <!-- Right: Quiz -->
+    <section class="panel">
+      <h1>Quiz (6 questions + age)</h1>
+      <p>Pick <b>Yes</b> or <b>No</b>. Age changes the baseline BPM a bit.</p>
+
+      <form id="quiz" class="qList">
+        <!-- Age question -->
+        <div class="q" data-type="age">
+          <div class="qTitle">
+            <strong>How old are you?</strong>
+            <span class="points">baseline BPM</span>
+          </div>
+          <div class="ageRow">
+            <input id="ageInput" type="number" inputmode="numeric" min="5" max="100" placeholder="e.g. 16" />
+            <span class="ageHint" id="ageHint">If empty, we assume 16.</span>
+          </div>
+        </div>
+
+        <div class="q" data-points="2">
+          <div class="qTitle">
+            <strong>Do you drink energy drinks (like Red Bull) often?</strong>
+            <span class="points">Yes = +2</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q1" id="q1y" value="yes">
+              <label for="q1y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q1" id="q1n" value="no">
+              <label for="q1n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="q" data-points="1">
+          <div class="qTitle">
+            <strong>Do you drink coffee or strong tea daily?</strong>
+            <span class="points">Yes = +1</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q2" id="q2y" value="yes">
+              <label for="q2y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q2" id="q2n" value="no">
+              <label for="q2n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="q" data-points="2">
+          <div class="qTitle">
+            <strong>Did you sleep less than 7 hours last night?</strong>
+            <span class="points">Yes = +2</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q3" id="q3y" value="yes">
+              <label for="q3y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q3" id="q3n" value="no">
+              <label for="q3n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="q" data-points="2">
+          <div class="qTitle">
+            <strong>Are you feeling stressed right now?</strong>
+            <span class="points">Yes = +2</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q4" id="q4y" value="yes">
+              <label for="q4y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q4" id="q4n" value="no">
+              <label for="q4n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="q" data-points="1">
+          <div class="qTitle">
+            <strong>Did you exercise in the last 2 hours?</strong>
+            <span class="points">Yes = +1</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q5" id="q5y" value="yes">
+              <label for="q5y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q5" id="q5n" value="no">
+              <label for="q5n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="q" data-points="2">
+          <div class="qTitle">
+            <strong>Did you have sugary snacks/drinks today?</strong>
+            <span class="points">Yes = +2</span>
+          </div>
+          <div class="choices">
+            <span class="choice">
+              <input type="radio" name="q6" id="q6y" value="yes">
+              <label for="q6y">Yes</label>
+            </span>
+            <span class="choice">
+              <input type="radio" name="q6" id="q6n" value="no">
+              <label for="q6n">No</label>
+            </span>
+          </div>
+        </div>
+
+        <div class="footerRow">
+          <div class="scoreBox">
+            Score: <b id="scoreValue">0</b> / <span id="scoreMax">0</span>
+          </div>
+          <button type="button" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    const quiz = document.getElementById('quiz');
+    const bpmValue = document.getElementById('bpmValue');
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreMax = document.getElementById('scoreMax');
+    const resetBtn = document.getElementById('resetBtn');
+    const ageInput = document.getElementById('ageInput');
+
+    const questions = Array.from(document.querySelectorAll('.q[data-points]'));
+    const maxScore = questions.reduce((sum, q) => sum + Number(q.dataset.points || 0), 0);
+    scoreMax.textContent = String(maxScore);
+
+    // Score -> animation + label (BPM is calculated separately so it can use age)
+    const levels = [
+      { min: 0, max: 1, label: "Calm",      duration: 1.20, dot: "var(--ok)",   glow: 0.18 },
+      { min: 2, max: 4, label: "Normal",    duration: 0.90, dot: "var(--ok)",   glow: 0.25 },
+      { min: 5, max: 7, label: "Fast",      duration: 0.62, dot: "var(--warn)", glow: 0.32 },
+      { min: 8, max: 99,label: "Very fast", duration: 0.45, dot: "var(--bad)",  glow: 0.40 },
+    ];
+
+    function getAge() {
+      const raw = (ageInput.value || "").trim();
+      const age = Number(raw);
+      if (!raw || Number.isNaN(age)) return 16;     // default if empty
+      return Math.max(5, Math.min(100, age));       // clamp
+    }
+
+    // Simple baseline model for school demo:
+    // younger -> slightly higher baseline resting BPM, older -> slightly lower
+    function baseBpmFromAge(age) {
+      if (age <= 12) return 85;
+      if (age <= 17) return 78;
+      if (age <= 30) return 75;
+      if (age <= 50) return 73;
+      return 71;
+    }
+
+    function getScore() {
+      let score = 0;
+      for (const q of questions) {
+        const points = Number(q.dataset.points || 0);
+        const checked = q.querySelector('input[type="radio"]:checked');
+        if (checked && checked.value === 'yes') score += points;
+      }
+      return score;
+    }
+
+    function levelFromScore(score) {
+      return levels.find(l => score >= l.min && score <= l.max) || levels[1];
+    }
+
+    function clamp(n, lo, hi) {
+      return Math.max(lo, Math.min(hi, n));
+    }
+
+    function calcBpm(age, score) {
+      const base = baseBpmFromAge(age);
+      // each score point adds ~6 BPM (tweak this if you want)
+      const bpm = base + score * 6;
+      return clamp(Math.round(bpm), 60, 140);
+    }
+
+    function apply(level, score, bpm) {
+      scoreValue.textContent = String(score);
+      bpmValue.textContent = String(bpm);
+      statusText.textContent = level.label;
+
+      document.documentElement.style.setProperty('--beat-duration', level.duration + 's');
+      document.documentElement.style.setProperty('--heart-glow', String(level.glow));
+
+      statusDot.style.background = level.dot;
+      statusDot.style.boxShadow =
+        `0 0 12px color-mix(in srgb, ${level.dot} 70%, transparent)`;
+    }
+
+    function update() {
+      const age = getAge();
+      const score = getScore();
+      const level = levelFromScore(score);
+      const bpm = calcBpm(age, score);
+      apply(level, score, bpm);
+    }
+
+    quiz.addEventListener('change', update);
+    ageInput.addEventListener('input', update);
+
+    resetBtn.addEventListener('click', () => {
+      quiz.reset();
+      ageInput.value = "";
+      update();
+    });
+
+    update();
+  </script>
+</body>
+</html>

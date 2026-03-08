@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="mn">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -14,12 +14,17 @@
       --warn: #ffcc00;
       --bad: #ff5a5a;
 
-      /* controlled by JS */
       --beat-duration: 0.9s;
       --heart-glow: 0.25;
     }
 
     *{ box-sizing: border-box; }
+
+    html, body{
+      width: 100%;
+      overflow-x: hidden;
+    }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -30,19 +35,24 @@
       min-height:100vh;
       display:flex;
       justify-content:center;
-      padding: 28px 14px;
+      padding: 24px 14px;
+      position: relative;
+    }
+
+    .langSwitcher{
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 1100;
     }
 
     .wrap{
-      width: min(980px, 100%);
+      width: min(1100px, 100%);
       display:grid;
-      grid-template-columns: 1.05fr 1.4fr;
+      grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.35fr);
       gap: 16px;
       align-items:start;
-    }
-
-    @media (max-width: 860px){
-      .wrap{ grid-template-columns: 1fr; }
+      margin-top: 48px;
     }
 
     .panel{
@@ -52,21 +62,29 @@
       padding: 18px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.35);
       backdrop-filter: blur(10px);
+      min-width: 0;
     }
 
     h1{
       margin: 0 0 8px;
-      font-size: 22px;
+      font-size: clamp(20px, 2.2vw, 28px);
       letter-spacing: 0.2px;
+      line-height: 1.2;
     }
+
+    h2{
+      margin: 0 0 8px;
+      font-size: clamp(17px, 1.8vw, 20px);
+      line-height: 1.25;
+    }
+
     p{
       margin: 6px 0 0;
       color: var(--muted);
-      line-height: 1.45;
-      font-size: 14px;
+      line-height: 1.5;
+      font-size: clamp(13px, 1.4vw, 14px);
     }
 
-    /* Heart area */
     .heartBox{
       display:flex;
       flex-direction:column;
@@ -78,21 +96,24 @@
 
     .bpm{
       display:flex;
-      gap: 12px;
+      gap: 10px;
       align-items:baseline;
       justify-content:center;
       flex-wrap:wrap;
     }
 
     .bpm .value{
-      font-size: 44px;
+      font-size: clamp(36px, 6vw, 52px);
       font-weight: 800;
       letter-spacing: -0.5px;
+      line-height: 1;
     }
+
     .bpm .unit{
       color: var(--muted);
       font-weight: 600;
       margin-left: 2px;
+      font-size: clamp(14px, 2vw, 16px);
     }
 
     .status{
@@ -104,33 +125,31 @@
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.10);
       color: var(--text);
-      font-size: 13px;
+      font-size: clamp(12px, 1.7vw, 13px);
       font-weight: 650;
+      max-width: 100%;
     }
+
     .dot{
       width: 10px;
       height: 10px;
       border-radius: 999px;
       background: var(--ok);
       box-shadow: 0 0 12px rgba(39,209,127,0.6);
+      flex: 0 0 auto;
     }
 
-    /* SVG heart animation */
     .heartSvg{
-      width: min(320px, 82vw);
+      width: min(320px, 75vw);
+      max-width: 100%;
       height: auto;
       display:block;
       filter: drop-shadow(0 0 22px rgba(255,59,107,var(--heart-glow)));
     }
+
     #heartImg {
       display: inline-block;
       transform-origin: center;
-      animation: beat var(--beat-duration) infinite ease-in-out;
-    }
-
-    /* Animate the whole anatomical heart as a group */
-    .heartShape{
-      transform-origin: 50% 55%;
       animation: beat var(--beat-duration) infinite ease-in-out;
     }
 
@@ -143,13 +162,13 @@
       100% { transform: scale(1); }
     }
 
-    /* Questions */
     .qList{
       display:flex;
       flex-direction:column;
       gap: 12px;
       margin-top: 10px;
     }
+
     .q{
       padding: 12px;
       border-radius: 14px;
@@ -158,21 +177,29 @@
       display:flex;
       flex-direction:column;
       gap: 10px;
+      min-width: 0;
     }
+
     .qTitle{
       display:flex;
       justify-content:space-between;
       gap: 10px;
       align-items:flex-start;
+      flex-wrap: wrap;
     }
+
     .qTitle strong{
-      font-size: 14px;
-      line-height: 1.35;
+      font-size: clamp(13px, 1.8vw, 14px);
+      line-height: 1.4;
+      flex: 1 1 220px;
+      min-width: 0;
     }
+
     .points{
       color: var(--muted);
       font-size: 12px;
       white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     .choices{
@@ -184,18 +211,22 @@
 
     .choice{
       position: relative;
+      flex: 0 0 auto;
     }
+
     .choice input{
       position:absolute;
       opacity:0;
       pointer-events:none;
     }
+
     .choice label{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      padding: 8px 12px;
-      min-width: 74px;
+      padding: 9px 14px;
+      min-width: 84px;
+      min-height: 42px;
       border-radius: 999px;
       cursor:pointer;
       user-select:none;
@@ -205,11 +236,14 @@
       font-weight: 650;
       font-size: 13px;
       transition: transform 120ms ease, background 120ms ease, border 120ms ease;
+      text-align: center;
     }
+
     .choice label:hover{
       transform: translateY(-1px);
       border-color: rgba(255,255,255,0.30);
     }
+
     .choice input:checked + label{
       background: rgba(255,255,255,0.16);
       border-color: rgba(255,255,255,0.38);
@@ -221,8 +255,10 @@
       align-items:center;
       flex-wrap:wrap;
     }
+
     .ageRow input[type="number"]{
-      width: 110px;
+      width: 120px;
+      max-width: 100%;
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.16);
@@ -230,10 +266,13 @@
       color: var(--text);
       font-weight: 700;
       outline: none;
+      font-size: 14px;
     }
+
     .ageHint{
       color: var(--muted);
       font-size: 12px;
+      line-height: 1.4;
     }
 
     .footerRow{
@@ -254,14 +293,18 @@
       appearance:none;
       border:none;
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 10px 14px;
       background: rgba(255,255,255,0.12);
       color: var(--text);
       font-weight: 700;
       cursor:pointer;
       border: 1px solid rgba(255,255,255,0.16);
       transition: transform 120ms ease, background 120ms ease, border 120ms ease;
+      font-size: 14px;
+      min-height: 42px;
+      line-height: 1.2;
     }
+
     button:hover{
       transform: translateY(-1px);
       background: rgba(255,255,255,0.16);
@@ -272,22 +315,215 @@
       margin-top: 10px;
       font-size: 12px;
       color: rgba(238,242,255,0.65);
+      max-width: 55ch;
     }
 
-    
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .modal.show{
+      display: flex;
+    }
+
+    .modalCard{
+      width: min(560px, 100%);
+      max-height: min(90vh, 700px);
+      overflow-y: auto;
+      background: rgba(16, 22, 44, 0.96);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+
+    .modalText{
+      color: var(--text);
+      font-size: clamp(14px, 1.8vw, 16px);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .modalActions{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-top: 18px;
+    }
+
+    .modalActions button{
+      flex: 1 1 120px;
+    }
+
+    .adviceList{
+      margin: 12px 0 0 18px;
+      padding: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .adviceList li + li{
+      margin-top: 6px;
+    }
+
+    .thanksMessage{
+      margin-top: 10px;
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px){
+      .wrap{
+        grid-template-columns: 1fr;
+      }
+
+      .panel{
+        padding: 16px;
+      }
+
+      .heartSvg{
+        width: min(280px, 70vw);
+      }
+    }
+
+    @media (max-width: 640px){
+      body{
+        padding: 16px 10px 22px;
+      }
+
+      .langSwitcher{
+        top: 10px;
+        right: 10px;
+      }
+
+      .langSwitcher button{
+        padding: 8px 12px;
+        min-height: 38px;
+        font-size: 13px;
+      }
+
+      .wrap{
+        gap: 12px;
+        margin-top: 42px;
+      }
+
+      .panel{
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .heartBox{
+        gap: 12px;
+      }
+
+      .heartSvg{
+        width: min(230px, 72vw);
+      }
+
+      .q{
+        padding: 11px;
+      }
+
+      .choices{
+        width: 100%;
+      }
+
+      .choice{
+        flex: 1 1 calc(50% - 5px);
+      }
+
+      .choice label{
+        width: 100%;
+        min-width: 0;
+      }
+
+      .ageRow{
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .ageRow input[type="number"]{
+        width: 100%;
+      }
+
+      .footerRow{
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .footerRow button{
+        width: 100%;
+      }
+
+      .modal{
+        padding: 10px;
+      }
+
+      .modalCard{
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .modalActions{
+        flex-direction: column;
+      }
+
+      .modalActions button{
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 380px){
+      h1{
+        font-size: 19px;
+      }
+
+      .bpm .value{
+        font-size: 32px;
+      }
+
+      .heartSvg{
+        width: min(200px, 72vw);
+      }
+
+      .choice{
+        flex: 1 1 100%;
+      }
+
+      .choice label{
+        min-height: 40px;
+        font-size: 12.5px;
+      }
+
+      .points{
+        white-space: normal;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="langSwitcher">
+    <button type="button" id="langBtn">Монгол</button>
+  </div>
+
   <div class="wrap">
-    <!-- Left: Heart -->
     <section class="panel">
-      <h1></h1>
-      <p>Answer the questions. Each <b>Yes</b> increases the score, which increases beat speed and the estimated BPM.</p>
+      <h1 id="leftTitle">Heart Rate Demo</h1>
+      <p id="leftDesc">Answer the questions. Each <b>Yes</b> increases the score and slightly raises the estimated heart rate.</p>
 
       <div class="heartBox">
         <div class="bpm">
           <span class="value" id="bpmValue">78</span>
-          <span class="unit">BPM</span>
+          <span class="unit" id="bpmUnit">Estimated BPM</span>
         </div>
 
         <div class="status" id="statusPill">
@@ -295,31 +531,28 @@
           <span id="statusText">Normal</span>
         </div>
 
-        <!-- Your anatomical heart SVG (inline). We animate the <g class="heartShape"> -->
-          <img 
-            src="anatomical-heart-svgrepo-com.svg" 
-            id="heartImg"
-            class="heartSvg"
-            alt="Beating anatomical heart"
-          />
+        <img 
+          src="anatomical-heart-svgrepo-com.svg" 
+          id="heartImg"
+          class="heartSvg"
+          alt="Beating anatomical heart"
+        />
 
-        <p class="note">
-          Demo for a school project (not a medical tool). Caffeine, stress, sleep, sugar, and activity can affect heart rate.
+        <p class="note" id="noteText">
+          Demo for a school project (not a medical tool). This is an estimate, not a real heart rate measurement.
         </p>
       </div>
     </section>
 
-    <!-- Right: Quiz -->
     <section class="panel">
-      <h1>Quiz (6 questions + age)</h1>
-      <p>Pick <b>Yes</b> or <b>No</b>. Age changes the baseline BPM a bit.</p>
+      <h1 id="quizTitle">Quiz (6 questions + age)</h1>
+      <p id="quizDesc">Pick <b>Yes</b> or <b>No</b>. Age changes the baseline estimated BPM a little.</p>
 
       <form id="quiz" class="qList">
-        <!-- Age question -->
         <div class="q" data-type="age">
           <div class="qTitle">
-            <strong>How old are you?</strong>
-            <span class="points">baseline BPM</span>
+            <strong id="ageQuestion">How old are you?</strong>
+            <span class="points" id="agePoints">baseline estimate</span>
           </div>
           <div class="ageRow">
             <input id="ageInput" type="number" inputmode="numeric" min="5" max="100" placeholder="e.g. 16" />
@@ -329,114 +562,139 @@
 
         <div class="q" data-points="2">
           <div class="qTitle">
-            <strong>Do you drink energy drinks (like Red Bull) often?</strong>
-            <span class="points">Yes = +2</span>
+            <strong id="q1Text">Do you drink energy drinks (like Red Bull) often?</strong>
+            <span class="points" id="q1Points">Yes = +2</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q1" id="q1y" value="yes">
-              <label for="q1y">Yes</label>
+              <label for="q1y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q1" id="q1n" value="no">
-              <label for="q1n">No</label>
+              <label for="q1n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="q" data-points="1">
           <div class="qTitle">
-            <strong>Do you drink coffee or strong tea daily?</strong>
-            <span class="points">Yes = +1</span>
+            <strong id="q2Text">Do you drink coffee or strong tea daily?</strong>
+            <span class="points" id="q2Points">Yes = +1</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q2" id="q2y" value="yes">
-              <label for="q2y">Yes</label>
+              <label for="q2y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q2" id="q2n" value="no">
-              <label for="q2n">No</label>
+              <label for="q2n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="q" data-points="2">
           <div class="qTitle">
-            <strong>Did you sleep less than 7 hours last night?</strong>
-            <span class="points">Yes = +2</span>
+            <strong id="q3Text">Did you sleep less than 7 hours last night?</strong>
+            <span class="points" id="q3Points">Yes = +2</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q3" id="q3y" value="yes">
-              <label for="q3y">Yes</label>
+              <label for="q3y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q3" id="q3n" value="no">
-              <label for="q3n">No</label>
+              <label for="q3n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="q" data-points="2">
           <div class="qTitle">
-            <strong>Are you feeling stressed right now?</strong>
-            <span class="points">Yes = +2</span>
+            <strong id="q4Text">Are you feeling stressed right now?</strong>
+            <span class="points" id="q4Points">Yes = +2</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q4" id="q4y" value="yes">
-              <label for="q4y">Yes</label>
+              <label for="q4y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q4" id="q4n" value="no">
-              <label for="q4n">No</label>
+              <label for="q4n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="q" data-points="1">
           <div class="qTitle">
-            <strong>Did you exercise in the last 2 hours?</strong>
-            <span class="points">Yes = +1</span>
+            <strong id="q5Text">Did you exercise in the last 2 hours?</strong>
+            <span class="points" id="q5Points">Yes = +1</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q5" id="q5y" value="yes">
-              <label for="q5y">Yes</label>
+              <label for="q5y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q5" id="q5n" value="no">
-              <label for="q5n">No</label>
+              <label for="q5n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="q" data-points="2">
           <div class="qTitle">
-            <strong>Did you have sugary snacks/drinks today?</strong>
-            <span class="points">Yes = +2</span>
+            <strong id="q6Text">Did you have sugary snacks/drinks today?</strong>
+            <span class="points" id="q6Points">Yes = +2</span>
           </div>
           <div class="choices">
             <span class="choice">
               <input type="radio" name="q6" id="q6y" value="yes">
-              <label for="q6y">Yes</label>
+              <label for="q6y" class="yesLabel">Yes</label>
             </span>
             <span class="choice">
               <input type="radio" name="q6" id="q6n" value="no">
-              <label for="q6n">No</label>
+              <label for="q6n" class="noLabel">No</label>
             </span>
           </div>
         </div>
 
         <div class="footerRow">
           <div class="scoreBox">
-            Score: <b id="scoreValue">0</b> / <span id="scoreMax">0</span>
+            <span id="scoreLabel">Score:</span> <b id="scoreValue">0</b> / <span id="scoreMax">0</span>
           </div>
           <button type="button" id="resetBtn">Reset</button>
         </div>
       </form>
     </section>
+  </div>
+
+  <!-- Question modal -->
+  <div class="modal" id="adviceModal">
+    <div class="modalCard">
+      <h2 id="modalTitle">Would you like to get advice?</h2>
+      <p class="modalText" id="modalText">
+        You answered all questions. Would you like to see heart disease prevention advice?
+      </p>
+      <div class="modalActions">
+        <button type="button" id="adviceYesBtn">Yes</button>
+        <button type="button" id="adviceNoBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result modal -->
+  <div class="modal" id="resultModal">
+    <div class="modalCard">
+      <h2 id="resultTitle">Heart Health Advice</h2>
+      <div id="resultContent"></div>
+      <div class="modalActions">
+        <button type="button" id="resultCloseBtn">Close</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -448,34 +706,154 @@
     const scoreMax = document.getElementById('scoreMax');
     const resetBtn = document.getElementById('resetBtn');
     const ageInput = document.getElementById('ageInput');
+    const langBtn = document.getElementById('langBtn');
+
+    const adviceModal = document.getElementById('adviceModal');
+    const adviceYesBtn = document.getElementById('adviceYesBtn');
+    const adviceNoBtn = document.getElementById('adviceNoBtn');
+
+    const resultModal = document.getElementById('resultModal');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultContent = document.getElementById('resultContent');
+    const resultCloseBtn = document.getElementById('resultCloseBtn');
 
     const questions = Array.from(document.querySelectorAll('.q[data-points]'));
     const maxScore = questions.reduce((sum, q) => sum + Number(q.dataset.points || 0), 0);
     scoreMax.textContent = String(maxScore);
 
-    // Score -> animation + label (BPM is calculated separately so it can use age)
+    let currentLang = 'en';
+    let advicePromptShown = false;
+
+    const translations = {
+      en: {
+        pageTitle: "Heart Rate Quiz",
+        langButton: "Монгол",
+        leftTitle: "Heart Rate Demo",
+        leftDesc: "Answer the questions. Each <b>Yes</b> increases the score and slightly raises the estimated heart rate.",
+        bpmUnit: "Estimated BPM",
+        noteText: "Demo for a school project (not a medical tool). This is an estimate, not a real heart rate measurement.",
+        quizTitle: "Quiz (6 questions + age)",
+        quizDesc: "Pick <b>Yes</b> or <b>No</b>. Age changes the baseline estimated BPM a little.",
+        ageQuestion: "How old are you?",
+        agePoints: "baseline estimate",
+        ageHint: "If empty, we assume 16.",
+        agePlaceholder: "e.g. 16",
+        q1Text: "Do you drink energy drinks (like Red Bull) often?",
+        q2Text: "Do you drink coffee or strong tea daily?",
+        q3Text: "Did you sleep less than 7 hours last night?",
+        q4Text: "Are you feeling stressed right now?",
+        q5Text: "Did you exercise in the last 2 hours?",
+        q6Text: "Did you have sugary snacks/drinks today?",
+        q1Points: "Yes = +2",
+        q2Points: "Yes = +1",
+        q3Points: "Yes = +2",
+        q4Points: "Yes = +2",
+        q5Points: "Yes = +1",
+        q6Points: "Yes = +2",
+        yes: "Yes",
+        no: "No",
+        scoreLabel: "Score:",
+        resetBtn: "Reset",
+        closeBtn: "Close",
+        statuses: {
+          calm: "Calm",
+          normal: "Normal",
+          fast: "Fast",
+          veryFast: "Very fast"
+        },
+        modalTitle: "Would you like to get advice?",
+        modalText: "You answered all questions. Would you like to see heart disease prevention advice?",
+        adviceYesBtn: "Yes",
+        adviceNoBtn: "No",
+        resultAdviceTitle: "Heart Health Advice",
+        resultThanksTitle: "Thank you",
+        thanksText: "Thank you.",
+        adviceItems: [
+          "Exercise regularly and stay physically active.",
+          "Avoid smoking and limit alcohol.",
+          "Reduce sugary drinks and unhealthy snacks.",
+          "Sleep enough each night.",
+          "Try to manage stress with rest, walking, or breathing exercises.",
+          "Drink caffeine and energy drinks in moderation.",
+          "Eat more vegetables, fruits, and healthy foods."
+        ]
+      },
+      mn: {
+        pageTitle: "Зүрхний цохилтын асуулга",
+        langButton: "English",
+        leftTitle: "Зүрхний цохилтын демо",
+        leftDesc: "Асуултуудад хариулна уу. <b>Тийм</b> гэсэн хариулт бүр тооцоолсон зүрхний цохилтыг бага зэрэг нэмэгдүүлнэ.",
+        bpmUnit: "Тооцоолсон BPM",
+        noteText: "Сургуулийн төслийн демо (эмнэлгийн хэрэгсэл биш). Энэ нь бодит хэмжилт биш, зөвхөн ойролцоо тооцоо юм.",
+        quizTitle: "Асуулга (6 асуулт + нас)",
+        quizDesc: "<b>Тийм</b> эсвэл <b>Үгүй</b>-г сонгоно уу. Нас нь үндсэн тооцоолсон BPM-д бага зэрэг нөлөөлнө.",
+        ageQuestion: "Та хэдэн настай вэ?",
+        agePoints: "үндсэн тооцоо",
+        ageHint: "Хоосон орхивол 16 нас гэж үзнэ.",
+        agePlaceholder: "жишээ нь 16",
+        q1Text: "Та энергийн ундаа (Red Bull гэх мэт) ойр ойрхон уудаг уу?",
+        q2Text: "Та өдөр бүр кофе эсвэл хүчтэй цай уудаг уу?",
+        q3Text: "Та өнгөрсөн шөнө 7 цагаас бага унтсан уу?",
+        q4Text: "Та яг одоо стресс мэдэрч байна уу?",
+        q5Text: "Та сүүлийн 2 цагийн дотор дасгал хийсэн үү?",
+        q6Text: "Та өнөөдөр чихэрлэг зууш эсвэл ундаа хэрэглэсэн үү?",
+        q1Points: "Тийм = +2",
+        q2Points: "Тийм = +1",
+        q3Points: "Тийм = +2",
+        q4Points: "Тийм = +2",
+        q5Points: "Тийм = +1",
+        q6Points: "Тийм = +2",
+        yes: "Тийм",
+        no: "Үгүй",
+        scoreLabel: "Оноо:",
+        resetBtn: "Дахин эхлүүлэх",
+        closeBtn: "Хаах",
+        statuses: {
+          calm: "Тайван",
+          normal: "Хэвийн",
+          fast: "Хурдан",
+          veryFast: "Маш хурдан"
+        },
+        modalTitle: "Зөвлөгөө авахыг хүсэж байна уу?",
+        modalText: "Та бүх асуултад хариуллаа. Зүрхний өвчнөөс сэргийлэх зөвлөгөө үзэх үү?",
+        adviceYesBtn: "Тийм",
+        adviceNoBtn: "Үгүй",
+        resultAdviceTitle: "Зүрхний өвчнөөс сэргийлэх зөвлөгөө",
+        resultThanksTitle: "Баярлалаа",
+        thanksText: "Баярлалаа.",
+        adviceItems: [
+          "Тогтмол дасгал хийж, идэвхтэй хөдөлгөөнтэй байгаарай.",
+          "Тамхи татахгүй байх, архийг хэтрүүлэхгүй байх.",
+          "Чихэрлэг ундаа, хэт тослог болон эрүүл бус хүнсийг багасгах.",
+          "Орой бүр хангалттай нойр авч байх.",
+          "Стрессээ алхах, амрах, амьсгалын дасгалаар бууруулах.",
+          "Кофеин болон энергийн ундааг тохируулж хэрэглэх.",
+          "Ногоо, жимс болон эрүүл хоол хүнс илүү хэрэглэх."
+        ]
+      }
+    };
+
     const levels = [
-      { min: 0, max: 1, label: "Calm",      duration: 1.20, dot: "var(--ok)",   glow: 0.18 },
-      { min: 2, max: 4, label: "Normal",    duration: 0.90, dot: "var(--ok)",   glow: 0.25 },
-      { min: 5, max: 7, label: "Fast",      duration: 0.62, dot: "var(--warn)", glow: 0.32 },
-      { min: 8, max: 99,label: "Very fast", duration: 0.45, dot: "var(--bad)",  glow: 0.40 },
+      { min: 0, max: 2, key: "calm", duration: 1.15, dot: "var(--ok)", glow: 0.18 },
+      { min: 3, max: 5, key: "normal", duration: 0.90, dot: "var(--ok)", glow: 0.25 },
+      { min: 6, max: 8, key: "fast", duration: 0.68, dot: "var(--warn)", glow: 0.32 },
+      { min: 9, max: 99, key: "veryFast", duration: 0.50, dot: "var(--bad)", glow: 0.40 },
     ];
 
     function getAge() {
       const raw = (ageInput.value || "").trim();
       const age = Number(raw);
-      if (!raw || Number.isNaN(age)) return 16;     // default if empty
-      return Math.max(5, Math.min(100, age));       // clamp
+      if (!raw || Number.isNaN(age)) return 16;
+      return Math.max(5, Math.min(100, age));
     }
 
-    // Simple baseline model for school demo:
-    // younger -> slightly higher baseline resting BPM, older -> slightly lower
     function baseBpmFromAge(age) {
-      if (age <= 12) return 85;
+      if (age <= 12) return 84;
       if (age <= 17) return 78;
-      if (age <= 30) return 75;
-      if (age <= 50) return 73;
-      return 71;
+      if (age <= 25) return 74;
+      if (age <= 40) return 72;
+      if (age <= 60) return 70;
+      return 69;
     }
 
     function getScore() {
@@ -488,6 +866,11 @@
       return score;
     }
 
+    function getAnswer(name) {
+      const checked = quiz.querySelector(`input[name="${name}"]:checked`);
+      return checked ? checked.value : null;
+    }
+
     function levelFromScore(score) {
       return levels.find(l => score >= l.min && score <= l.max) || levels[1];
     }
@@ -496,44 +879,189 @@
       return Math.max(lo, Math.min(hi, n));
     }
 
-    function calcBpm(age, score) {
-      const base = baseBpmFromAge(age);
-      // each score point adds ~6 BPM (tweak this if you want)
-      const bpm = base + score * 6;
-      return clamp(Math.round(bpm), 60, 140);
+    function calcBpm(age) {
+      let bpm = baseBpmFromAge(age);
+
+      if (getAnswer('q1') === 'yes') bpm += 5;
+      if (getAnswer('q2') === 'yes') bpm += 3;
+      if (getAnswer('q3') === 'yes') bpm += 4;
+      if (getAnswer('q4') === 'yes') bpm += 6;
+      if (getAnswer('q5') === 'yes') bpm += 8;
+      if (getAnswer('q6') === 'yes') bpm += 2;
+
+      return clamp(Math.round(bpm), 58, 135);
     }
 
     function apply(level, score, bpm) {
+      const t = translations[currentLang];
+
       scoreValue.textContent = String(score);
       bpmValue.textContent = String(bpm);
-      statusText.textContent = level.label;
+      statusText.textContent = t.statuses[level.key];
 
       document.documentElement.style.setProperty('--beat-duration', level.duration + 's');
       document.documentElement.style.setProperty('--heart-glow', String(level.glow));
 
       statusDot.style.background = level.dot;
-      statusDot.style.boxShadow =
-        `0 0 12px color-mix(in srgb, ${level.dot} 70%, transparent)`;
+      statusDot.style.boxShadow = `0 0 12px color-mix(in srgb, ${level.dot} 70%, transparent)`;
+    }
+
+    function allQuestionsAnswered() {
+      return questions.every(q => q.querySelector('input[type="radio"]:checked'));
+    }
+
+    function showAdviceModal() {
+      adviceModal.classList.add('show');
+    }
+
+    function hideAdviceModal() {
+      adviceModal.classList.remove('show');
+    }
+
+    function showResultModal() {
+      resultModal.classList.add('show');
+    }
+
+    function hideResultModal() {
+      resultModal.classList.remove('show');
+    }
+
+    function showAdviceResult() {
+      const t = translations[currentLang];
+      resultTitle.textContent = t.resultAdviceTitle;
+
+      const ul = document.createElement('ul');
+      ul.className = 'adviceList';
+
+      t.adviceItems.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+
+      resultContent.innerHTML = '';
+      resultContent.appendChild(ul);
+      resultCloseBtn.textContent = t.closeBtn;
+      showResultModal();
+    }
+
+    function showThanksResult() {
+      const t = translations[currentLang];
+      resultTitle.textContent = t.resultThanksTitle;
+      resultContent.innerHTML = `<div class="thanksMessage">${t.thanksText}</div>`;
+      resultCloseBtn.textContent = t.closeBtn;
+      showResultModal();
+    }
+
+    function updateModalLanguage() {
+      const t = translations[currentLang];
+      document.getElementById('modalTitle').textContent = t.modalTitle;
+      document.getElementById('modalText').textContent = t.modalText;
+      adviceYesBtn.textContent = t.adviceYesBtn;
+      adviceNoBtn.textContent = t.adviceNoBtn;
+      resultCloseBtn.textContent = t.closeBtn;
+    }
+
+    function updateLanguage() {
+      const t = translations[currentLang];
+
+      document.documentElement.lang = currentLang === 'mn' ? 'mn' : 'en';
+      document.title = t.pageTitle;
+      langBtn.textContent = t.langButton;
+
+      document.getElementById('leftTitle').textContent = t.leftTitle;
+      document.getElementById('leftDesc').innerHTML = t.leftDesc;
+      document.getElementById('bpmUnit').textContent = t.bpmUnit;
+      document.getElementById('noteText').textContent = t.noteText;
+
+      document.getElementById('quizTitle').textContent = t.quizTitle;
+      document.getElementById('quizDesc').innerHTML = t.quizDesc;
+
+      document.getElementById('ageQuestion').textContent = t.ageQuestion;
+      document.getElementById('agePoints').textContent = t.agePoints;
+      document.getElementById('ageHint').textContent = t.ageHint;
+      ageInput.placeholder = t.agePlaceholder;
+
+      document.getElementById('q1Text').textContent = t.q1Text;
+      document.getElementById('q2Text').textContent = t.q2Text;
+      document.getElementById('q3Text').textContent = t.q3Text;
+      document.getElementById('q4Text').textContent = t.q4Text;
+      document.getElementById('q5Text').textContent = t.q5Text;
+      document.getElementById('q6Text').textContent = t.q6Text;
+
+      document.getElementById('q1Points').textContent = t.q1Points;
+      document.getElementById('q2Points').textContent = t.q2Points;
+      document.getElementById('q3Points').textContent = t.q3Points;
+      document.getElementById('q4Points').textContent = t.q4Points;
+      document.getElementById('q5Points').textContent = t.q5Points;
+      document.getElementById('q6Points').textContent = t.q6Points;
+
+      document.getElementById('scoreLabel').textContent = t.scoreLabel;
+      resetBtn.textContent = t.resetBtn;
+
+      document.querySelectorAll('.yesLabel').forEach(label => {
+        label.textContent = t.yes;
+      });
+
+      document.querySelectorAll('.noLabel').forEach(label => {
+        label.textContent = t.no;
+      });
+
+      updateModalLanguage();
+      update();
     }
 
     function update() {
       const age = getAge();
       const score = getScore();
       const level = levelFromScore(score);
-      const bpm = calcBpm(age, score);
+      const bpm = calcBpm(age);
       apply(level, score, bpm);
+
+      if (allQuestionsAnswered() && !advicePromptShown) {
+        advicePromptShown = true;
+        showAdviceModal();
+      }
     }
 
     quiz.addEventListener('change', update);
     ageInput.addEventListener('input', update);
 
+    langBtn.addEventListener('click', () => {
+      currentLang = currentLang === 'en' ? 'mn' : 'en';
+      updateLanguage();
+    });
+
+    adviceYesBtn.addEventListener('click', () => {
+      hideAdviceModal();
+      showAdviceResult();
+    });
+
+    adviceNoBtn.addEventListener('click', () => {
+      hideAdviceModal();
+      showThanksResult();
+    });
+
+    resultCloseBtn.addEventListener('click', hideResultModal);
+
+    adviceModal.addEventListener('click', (e) => {
+      if (e.target === adviceModal) hideAdviceModal();
+    });
+
+    resultModal.addEventListener('click', (e) => {
+      if (e.target === resultModal) hideResultModal();
+    });
+
     resetBtn.addEventListener('click', () => {
       quiz.reset();
       ageInput.value = "";
+      advicePromptShown = false;
+      hideAdviceModal();
+      hideResultModal();
       update();
     });
 
-    update();
+    updateLanguage();
   </script>
 </body>
 </html>
